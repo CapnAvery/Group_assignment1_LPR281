@@ -93,7 +93,28 @@ namespace Group_assignment1_LPR281
             ChartObject.AxisY.Maximum = MaxX2;
             for (int i = 0; i < AllConstraints.Count; i++)
             {
-                AllConstraints[i].SetCuts(MaxX1, MaxX2);
+                Constraint _Const = AllConstraints[i];
+                _Const.SetCuts(MaxX1, MaxX2);
+                if (_Const.X1Cut.X > MaxX1)
+                {
+                    MaxX1 = (int)_Const.X1Cut.X + 1;
+                    ResetGraph();
+                }
+                if (_Const.X2Cut.Y > MaxX2)
+                {
+                    MaxX2 = (int)_Const.X2Cut.Y + 1;
+                    ResetGraph();
+                }
+                if (_Const.X1Cut.X < MinX1)
+                {
+                    MinX1 = (int)_Const.X1Cut.X + 1;
+                    ResetGraph();
+                }
+                if (_Const.X2Cut.Y < MinX2)
+                {
+                    MinX2 = (int)_Const.X2Cut.Y + 1;
+                    ResetGraph();
+                }
             }
         }
 
@@ -133,7 +154,8 @@ namespace Group_assignment1_LPR281
                 }
                 if (X1Cut.X < 0)
                 {
-
+                    X1Cut.X = MaxX1;
+                    X1Cut.Y = (RHS - X1Coefficient * MaxX1) / X2Coefficient;
                 }
                 if (X2Coefficient != 0)
                 {
