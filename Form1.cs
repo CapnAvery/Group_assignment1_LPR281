@@ -12,6 +12,106 @@ namespace Group_assignment1_LPR281
 {
     public partial class Form1 : Form
     {
+
+
+        public class Constraint
+        {
+            public string ID;
+            public string Sign;
+            public float X1Coefficient;
+            public float X2Coefficient;
+            public float RHS;
+            public Point Cut1;
+            public Point Cut2;
+
+            public Constraint(string _ID, string _Sign, string _X1Coef, string _X2Coef, string _RHS, int MaxX1, int MaxX2, int MinX1, int MinX2)
+            {
+                ID = _ID;
+                Sign = _Sign;
+                X1Coefficient = int.Parse(_X1Coef);
+                X2Coefficient = int.Parse(_X2Coef);
+                RHS = int.Parse(_RHS);
+                Cut1 = new Point(0, 0);
+                Cut2 = new Point(0, 0);
+                SetCuts(MaxX1, MaxX2,MinX1,MinX2);
+            }
+
+            public bool CheckPoint(Point _Point)
+            {
+                bool Result = true;
+                float X1Value = _Point.X * X1Coefficient;
+                float X2Value = _Point.Y * X2Coefficient;
+                float Total = X1Value + X2Value;
+                if (Sign == ">=")
+                {
+                    Result = !(Total >= RHS);
+                }
+                else
+                {
+                    if (Sign == "<=")
+                    {
+                        Result = !(Total <= RHS);
+                    }
+                    else
+                    {
+                        Result = !(Total == RHS);
+                    }
+                }
+                return Result;
+            }
+
+            public void SetCuts(int MaxX1, int MaxX2,int MinX1, int MinX2)
+            {
+                if (!(X1Coefficient == 0 && X2Coefficient == 0))
+                {
+                    if (X2Coefficient != 0)
+                    {
+                        Cut1.X = MinX1;
+                        Cut1.Y = (RHS - X1Coefficient * MinX1) / X2Coefficient;
+
+                        Cut2.X = MaxX1;
+                        Cut2.Y = (RHS - X1Coefficient * MaxX1) / X2Coefficient;
+                    }
+                    else
+                    {
+                        Cut1.X = RHS / X1Coefficient;
+                        Cut1.Y = MinX2;
+
+                        Cut2.X = RHS / X1Coefficient;
+                        Cut2.Y = MaxX2;
+                    }
+
+                    if (X1Coefficient == 0)
+                    {
+                        Cut1.X = MinX1;
+                        Cut1.Y = RHS / X2Coefficient;
+
+                        Cut2.X = MaxX2;
+                        Cut2.Y = RHS / X2Coefficient;
+                    }
+                }
+                else
+                {
+                    Cut1 = new Point(0, 0);
+                    Cut2 = new Point(0, 0);
+                }
+            }
+        }
+
+
+        public struct Point
+        {
+            public float X;
+            public float Y;
+
+            public Point(float _X, float _Y)
+            {
+                X = _X;
+                Y = _Y;
+            }
+
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -38,7 +138,7 @@ namespace Group_assignment1_LPR281
         void AddConstraint(string X1Coef, string X2Coef, string Sign, string RHS)
         {
             int ID = AllConstraints.Count;
-            Constraint NewConstraint = new Constraint(ID.ToString(), Sign, X1Coef, X2Coef, RHS, MaxX1, MaxX2);
+            Constraint NewConstraint = new Constraint(ID.ToString(), Sign, X1Coef, X2Coef, RHS, MaxX1, MaxX2, MinX1,MinX2);
             AllConstraints.Add(NewConstraint);
             string Line = "";
             Line += ID.ToString() + ". " + X1Coef + "x1 + " + X2Coef + "x2 " + Sign + " " + RHS;
@@ -46,19 +146,49 @@ namespace Group_assignment1_LPR281
             DrawConstraints(NewConstraint);
         }
 
-        void DrawConstraints(Constraint _Const  =   null)
+        void DrawConstraints(Constraint _Const = null)
         {
+            //Calculate the maximums and minimums of the graph
             ResetGraph();
+
+            //Clear the current graph
             chart1.Series.Clear();
+            //Draw the axis for X1
+            string Name = "X1";
+            chart1.Series.Add(Name);
+            chart1.Series[Name].Color = Color.FromArgb(0, 0, 0);
+            chart1.Series[Name].Legend = "Legend1";
+            chart1.Series[Name].ChartArea = "ChartArea1";
+            chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            for (int y = -2; y <= 2; y++)
+            {//We draw 5 lines instead of just 1 so that it appears extra thick
+                chart1.Series[Name].Points.AddXY(MinX1, (float)y/100.0f);
+                chart1.Series[Name].Points.AddXY(MaxX1, (float)y / 100.0f);
+            }
+
+            Name = "X2";
+            chart1.Series.Add(Name);
+            chart1.Series[Name].Color = Color.FromArgb(0, 0, 0);
+            chart1.Series[Name].Legend = "Legend1";
+            chart1.Series[Name].ChartArea = "ChartArea1";
+            chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            for (int x = -2; x <= 2; x++)//We draw 5 lines instead of just 1 so that it appears extra thick
+            {
+                chart1.Series[Name].Points.AddXY((float)x/100.0f, MinX2);
+                chart1.Series[Name].Points.AddXY((float)x / 100.0f, MaxX2);
+            }
+
             Random rand = new Random();
             for (int i = 0; i < AllConstraints.Count; i++)
             {
-                string Name = "Constraint " + AllConstraints[i].ID;
+                Name = "Constraint " + AllConstraints[i].ID;
                 chart1.Series.Add(Name);
-                chart1.Series[Name].Color = Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
+                chart1.Series[Name].Color = Color.FromArgb(rand.Next(246) + 10, rand.Next(246) + 10, rand.Next(246) + 10);
+                //We say 246 + 10 so that the minimum value is 10. This is so that there are no lines that are near black in color, to avoid confusion with the X1 and X2 lines.
                 chart1.Series[Name].Legend = "Legend1";
                 chart1.Series[Name].ChartArea = "ChartArea1";
                 chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+                AllConstraints[i].SetCuts(MaxX1, MaxX2,MinX1,MinX2);
                 chart1.Series[Name].Points.AddXY(AllConstraints[i].Cut1.X, AllConstraints[i].Cut1.Y);
                 chart1.Series[Name].Points.AddXY(AllConstraints[i].Cut2.X, AllConstraints[i].Cut2.Y);
             }
@@ -76,135 +206,36 @@ namespace Group_assignment1_LPR281
             for (int i = 0; i < AllConstraints.Count; i++)
             {
                 Constraint _Const = AllConstraints[i];
-                _Const.SetCuts(MaxX1, MaxX2);
                 //The following is to make sure that the graph has the correct range
-                if (_Const.Cut1.X > MaxX1)
+                //These are for the maximums
+                if (_Const.X1Coefficient > MaxX1)
                 {
-                    MaxX1 = (int)_Const.Cut1.X + 1;
+                    MaxX1 = (int)_Const.X1Coefficient + 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.Cut2.Y > MaxX2)
+                if (_Const.X2Coefficient > MaxX2)
                 {
-                    MaxX2 = (int)_Const.Cut2.Y + 1;
+                    MaxX2 = (int)_Const.X2Coefficient + 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.Cut1.Y > MaxX2)
+                //These are for the minimums
+                if (_Const.X1Coefficient < MinX1)
                 {
-                    MaxX2 = (int)_Const.Cut1.Y + 1;
+                    MinX1 = (int)_Const.X1Coefficient - 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.Cut1.Y<MinX2)
+                if (_Const.X2Coefficient < MinX2)
                 {
-
-                }
-                if (_Const.Cut1.X < MinX1)
-                {
-                    MinX1 = (int)_Const.Cut1.X + 1;
+                    MinX2 = (int)_Const.X2Coefficient - 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.Cut2.Y < MinX2)
-                {
-                    MinX2 = (int)_Const.Cut2.Y + 1;
-                    ResetGraph();
-                    break;
-                }
+
+                _Const.SetCuts(MaxX1, MaxX2, MinX1, MinX2);
             }
-        }
-
-        public class Constraint
-        {
-            public string ID;
-            public string Sign;
-            public float X1Coefficient;
-            public float X2Coefficient;
-            public float RHS;
-            public Point Cut1;
-            public Point Cut2;
-
-            public Constraint(string _ID, string _Sign, string _X1Coef, string _X2Coef, string _RHS, int MaxX1, int MaxX2)
-            {
-                ID = _ID;
-                Sign = _Sign;
-                X1Coefficient = int.Parse(_X1Coef);
-                X2Coefficient = int.Parse(_X2Coef);
-                RHS = int.Parse(_RHS);
-                Cut1 = new Point(0, 0);
-                Cut2 = new Point(0, 0);
-                SetCuts(MaxX1, MaxX2);
-            }
-
-            public  bool CheckPoint(Point _Point)
-            {
-                bool Result = true;
-                float X1Value = _Point.X * X1Coefficient;
-                float X2Value = _Point.Y * X2Coefficient;
-                float Total = X1Value + X2Value;
-                if (Sign==">=")
-                {
-                    Result = !(Total >= RHS);
-                }
-                else
-                {
-                    if (Sign=="<=")
-                    {
-                        Result = !(Total <= RHS);
-                    }
-                    else
-                    {
-                        Result = !(Total == RHS);
-                    }
-                }
-                return Result;
-            }
-
-            public void SetCuts(int MaxX1, int MaxX2)
-            {
-                bool Cut1Zero = false;
-                if (X1Coefficient != 0)
-                {
-                    Cut1 = new Point(RHS / X1Coefficient, 0);
-                }
-                else
-                {//If the coefficient of x1 is 0, then the line must represent a single x2 value
-                    Cut1Zero = true;
-                    Cut1 = new Point(MaxX1, 0);
-                }
-                if (Cut1.X < 0)
-                {//If the cut is less than 0, we flip it over to the maximum positive side for aesthetic purposes
-                    Cut1.X = MaxX1;
-                    Cut1.Y = (RHS - X1Coefficient * MaxX1) / X2Coefficient;
-                }
-                if (X2Coefficient != 0)
-                {
-                    Cut2 = new Point(0, RHS / X2Coefficient);
-                }
-                else
-                {
-                    Cut2 = new Point(Cut2.X, MaxX2);
-                }
-                if (Cut1Zero == true)
-                {
-                    Cut1.Y = Cut2.Y;
-                }
-            }
-        }
-
-
-        public struct Point
-        {
-            public float X;
-            public float Y;
-
-            public Point(float _X, float _Y)
-            {
-                X = _X;
-                Y = _Y;
-            }
-
         }
 
         private void btnAddConstraint_Click(object sender, EventArgs e)
@@ -300,9 +331,14 @@ namespace Group_assignment1_LPR281
 
         }
        
-        void    DisplayError    (string Error)
+        public  void    DisplayError    (string Error)
         {
             lblError.Text = Error;
+        }
+
+        private void btnRemoveConstraint_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
