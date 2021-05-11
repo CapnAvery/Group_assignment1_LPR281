@@ -26,6 +26,9 @@ namespace Group_assignment1_LPR281
         private void Form1_Load(object sender, EventArgs e)
         {
             //hallo mensies
+
+
+            //as julle die kan sien dan werk alles :D
             //Theuns has joined the club
             AllConstraints = new List<Constraint>();
             ResetGraph();
@@ -189,6 +192,7 @@ namespace Group_assignment1_LPR281
                 X = _X;
                 Y = _Y;
             }
+
         }
 
         private void btnAddConstraint_Click(object sender, EventArgs e)
