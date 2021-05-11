@@ -160,5 +160,10 @@ namespace Group_assignment1_LPR281
                 Y = _Y;
             }
         }
+
+        private void btnAddConstraint_Click(object sender, EventArgs e)
+        {
+            AddConstraint(txtX1Coef.Text, txtX2Coef.Text, cbxSign.Text, txtRHS.Text);
+        }
     }
 }
