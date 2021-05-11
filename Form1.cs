@@ -36,11 +36,7 @@ namespace Group_assignment1_LPR281
 
         void AddConstraint(string X1Coef, string X2Coef, string Sign, string RHS)
         {
-            int ID = 0;
-            if (AllConstraints.Count > 0)
-            {
-                ID = int.Parse(AllConstraints[AllConstraints.Count - 1].ID) + 1;
-            }
+            int ID = AllConstraints.Count;
             Constraint NewConstraint = new Constraint(ID.ToString(), Sign, X1Coef, X2Coef, RHS, MaxX1, MaxX2);
             AllConstraints.Add(NewConstraint);
             string Line = "";
@@ -51,29 +47,7 @@ namespace Group_assignment1_LPR281
 
         void DrawConstraints(Constraint _Const  =   null)
         {
-            if (_Const!=null)
-            {
-                if (_Const.X1Cut.X > MaxX1)
-                {
-                    MaxX1 = (int)_Const.X1Cut.X + 1;
-                    ResetGraph();
-                }
-                if (_Const.X2Cut.Y > MaxX2)
-                {
-                    MaxX2 = (int)_Const.X2Cut.Y + 1;
-                    ResetGraph();
-                }
-                if (_Const.X1Cut.X < MinX1)
-                {
-                    MinX1 = (int)_Const.X1Cut.X + 1;
-                    ResetGraph();
-                }
-                if (_Const.X2Cut.Y < MinX2)
-                {
-                    MinX2 = (int)_Const.X2Cut.Y + 1;
-                    ResetGraph();
-                }
-            }
+            ResetGraph();
             chart1.Series.Clear();
             Random rand = new Random();
             for (int i = 0; i < AllConstraints.Count; i++)
@@ -101,30 +75,36 @@ namespace Group_assignment1_LPR281
             {
                 Constraint _Const = AllConstraints[i];
                 _Const.SetCuts(MaxX1, MaxX2);
+                //The following is to make sure that the graph has the correct range
                 if (_Const.X1Cut.X > MaxX1)
                 {
                     MaxX1 = (int)_Const.X1Cut.X + 1;
                     ResetGraph();
+                    break;
                 }
                 if (_Const.X2Cut.Y > MaxX2)
                 {
                     MaxX2 = (int)_Const.X2Cut.Y + 1;
                     ResetGraph();
+                    break;
                 }
                 if (_Const.X1Cut.Y > MaxX2)
                 {
                     MaxX2 = (int)_Const.X1Cut.Y + 1;
                     ResetGraph();
+                    break;
                 }
                 if (_Const.X1Cut.X < MinX1)
                 {
                     MinX1 = (int)_Const.X1Cut.X + 1;
                     ResetGraph();
+                    break;
                 }
                 if (_Const.X2Cut.Y < MinX2)
                 {
                     MinX2 = (int)_Const.X2Cut.Y + 1;
                     ResetGraph();
+                    break;
                 }
             }
         }
