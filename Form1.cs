@@ -46,27 +46,30 @@ namespace Group_assignment1_LPR281
             DrawConstraints(NewConstraint);
         }
 
-        void DrawConstraints(Constraint _Const)
+        void DrawConstraints(Constraint _Const  =   null)
         {
-            if (_Const.X1Cut.X > MaxX1)
+            if (_Const!=null)
             {
-                MaxX1 = (int)_Const.X1Cut.X + 1;
-                ResetGraph();
-            }
-            if (_Const.X2Cut.Y > MaxX2)
-            {
-                MaxX2 = (int)_Const.X2Cut.Y + 1;
-                ResetGraph();
-            }
-            if (_Const.X1Cut.X < MinX1)
-            {
-                MinX1 = (int)_Const.X1Cut.X + 1;
-                ResetGraph();
-            }
-            if (_Const.X2Cut.Y < MinX2)
-            {
-                MinX2 = (int)_Const.X2Cut.Y + 1;
-                ResetGraph();
+                if (_Const.X1Cut.X > MaxX1)
+                {
+                    MaxX1 = (int)_Const.X1Cut.X + 1;
+                    ResetGraph();
+                }
+                if (_Const.X2Cut.Y > MaxX2)
+                {
+                    MaxX2 = (int)_Const.X2Cut.Y + 1;
+                    ResetGraph();
+                }
+                if (_Const.X1Cut.X < MinX1)
+                {
+                    MinX1 = (int)_Const.X1Cut.X + 1;
+                    ResetGraph();
+                }
+                if (_Const.X2Cut.Y < MinX2)
+                {
+                    MinX2 = (int)_Const.X2Cut.Y + 1;
+                    ResetGraph();
+                }
             }
             chart1.Series.Clear();
             Random rand = new Random();
@@ -105,6 +108,11 @@ namespace Group_assignment1_LPR281
                     MaxX2 = (int)_Const.X2Cut.Y + 1;
                     ResetGraph();
                 }
+                if (_Const.X1Cut.Y > MaxX2)
+                {
+                    MaxX2 = (int)_Const.X1Cut.Y + 1;
+                    ResetGraph();
+                }
                 if (_Const.X1Cut.X < MinX1)
                 {
                     MinX1 = (int)_Const.X1Cut.X + 1;
@@ -118,7 +126,7 @@ namespace Group_assignment1_LPR281
             }
         }
 
-        public struct Constraint
+        public class Constraint
         {
             public string ID;
             public string Sign;
@@ -186,6 +194,11 @@ namespace Group_assignment1_LPR281
         private void btnAddConstraint_Click(object sender, EventArgs e)
         {
             AddConstraint(txtX1Coef.Text, txtX2Coef.Text, cbxSign.Text, txtRHS.Text);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            DrawConstraints();
         }
     }
 }
