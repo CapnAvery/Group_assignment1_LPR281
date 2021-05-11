@@ -18,6 +18,7 @@ namespace Group_assignment1_LPR281
         }
 
         public List<Constraint> AllConstraints;
+        public List<Point> FeasibleArea;
         public int MaxX1 = 1;
         public int MaxX2 = 1;
         public int MinX1 = 0;
@@ -52,13 +53,14 @@ namespace Group_assignment1_LPR281
             Random rand = new Random();
             for (int i = 0; i < AllConstraints.Count; i++)
             {
-                chart1.Series.Add(AllConstraints[i].ID);
-                chart1.Series[AllConstraints[i].ID].Color = Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
-                chart1.Series[AllConstraints[i].ID].Legend = "Legend1";
-                chart1.Series[AllConstraints[i].ID].ChartArea = "ChartArea1";
-                chart1.Series[AllConstraints[i].ID].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-                chart1.Series[AllConstraints[i].ID].Points.AddXY(AllConstraints[i].X1Cut.X, AllConstraints[i].X1Cut.Y);
-                chart1.Series[AllConstraints[i].ID].Points.AddXY(AllConstraints[i].X2Cut.X, AllConstraints[i].X2Cut.Y);
+                string Name = "Constraint " + AllConstraints[i].ID;
+                chart1.Series.Add(Name);
+                chart1.Series[Name].Color = Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
+                chart1.Series[Name].Legend = "Legend1";
+                chart1.Series[Name].ChartArea = "ChartArea1";
+                chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+                chart1.Series[Name].Points.AddXY(AllConstraints[i].Cut1.X, AllConstraints[i].Cut1.Y);
+                chart1.Series[Name].Points.AddXY(AllConstraints[i].Cut2.X, AllConstraints[i].Cut2.Y);
             }
         }
 
@@ -76,33 +78,37 @@ namespace Group_assignment1_LPR281
                 Constraint _Const = AllConstraints[i];
                 _Const.SetCuts(MaxX1, MaxX2);
                 //The following is to make sure that the graph has the correct range
-                if (_Const.X1Cut.X > MaxX1)
+                if (_Const.Cut1.X > MaxX1)
                 {
-                    MaxX1 = (int)_Const.X1Cut.X + 1;
+                    MaxX1 = (int)_Const.Cut1.X + 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.X2Cut.Y > MaxX2)
+                if (_Const.Cut2.Y > MaxX2)
                 {
-                    MaxX2 = (int)_Const.X2Cut.Y + 1;
+                    MaxX2 = (int)_Const.Cut2.Y + 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.X1Cut.Y > MaxX2)
+                if (_Const.Cut1.Y > MaxX2)
                 {
-                    MaxX2 = (int)_Const.X1Cut.Y + 1;
+                    MaxX2 = (int)_Const.Cut1.Y + 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.X1Cut.X < MinX1)
+                if (_Const.Cut1.Y<MinX2)
                 {
-                    MinX1 = (int)_Const.X1Cut.X + 1;
+
+                }
+                if (_Const.Cut1.X < MinX1)
+                {
+                    MinX1 = (int)_Const.Cut1.X + 1;
                     ResetGraph();
                     break;
                 }
-                if (_Const.X2Cut.Y < MinX2)
+                if (_Const.Cut2.Y < MinX2)
                 {
-                    MinX2 = (int)_Const.X2Cut.Y + 1;
+                    MinX2 = (int)_Const.Cut2.Y + 1;
                     ResetGraph();
                     break;
                 }
@@ -116,8 +122,8 @@ namespace Group_assignment1_LPR281
             public float X1Coefficient;
             public float X2Coefficient;
             public float RHS;
-            public Point X1Cut;
-            public Point X2Cut;
+            public Point Cut1;
+            public Point Cut2;
 
             public Constraint(string _ID, string _Sign, string _X1Coef, string _X2Coef, string _RHS, int MaxX1, int MaxX2)
             {
@@ -126,42 +132,68 @@ namespace Group_assignment1_LPR281
                 X1Coefficient = int.Parse(_X1Coef);
                 X2Coefficient = int.Parse(_X2Coef);
                 RHS = int.Parse(_RHS);
-                X1Cut = new Point(0, 0);
-                X2Cut = new Point(0, 0);
+                Cut1 = new Point(0, 0);
+                Cut2 = new Point(0, 0);
                 SetCuts(MaxX1, MaxX2);
+            }
+
+            public  bool CheckPoint(Point _Point)
+            {
+                bool Result = true;
+                float X1Value = _Point.X * X1Coefficient;
+                float X2Value = _Point.Y * X2Coefficient;
+                float Total = X1Value + X2Value;
+                if (Sign==">=")
+                {
+                    Result = !(Total >= RHS);
+                }
+                else
+                {
+                    if (Sign=="<=")
+                    {
+                        Result = !(Total <= RHS);
+                    }
+                    else
+                    {
+                        Result = !(Total == RHS);
+                    }
+                }
+                return Result;
             }
 
             public void SetCuts(int MaxX1, int MaxX2)
             {
-                bool X1Zero = false;
+                bool Cut1Zero = false;
                 if (X1Coefficient != 0)
                 {
-                    X1Cut = new Point(RHS / X1Coefficient, 0);
+                    Cut1 = new Point(RHS / X1Coefficient, 0);
                 }
                 else
-                {
-                    X1Zero = true;
-                    X1Cut = new Point(MaxX1, 0);
+                {//If the coefficient of x1 is 0, then the line must represent a single x2 value
+                    Cut1Zero = true;
+                    Cut1 = new Point(MaxX1, 0);
                 }
-                if (X1Cut.X < 0)
-                {
-                    X1Cut.X = MaxX1;
-                    X1Cut.Y = (RHS - X1Coefficient * MaxX1) / X2Coefficient;
+                if (Cut1.X < 0)
+                {//If the cut is less than 0, we flip it over to the maximum positive side for aesthetic purposes
+                    Cut1.X = MaxX1;
+                    Cut1.Y = (RHS - X1Coefficient * MaxX1) / X2Coefficient;
                 }
                 if (X2Coefficient != 0)
                 {
-                    X2Cut = new Point(0, RHS / X2Coefficient);
+                    Cut2 = new Point(0, RHS / X2Coefficient);
                 }
                 else
                 {
-                    X2Cut = new Point(X1Cut.X, MaxX2);
+                    Cut2 = new Point(Cut2.X, MaxX2);
                 }
-                if (X1Zero == true)
+                if (Cut1Zero == true)
                 {
-                    X1Cut.Y = X2Cut.Y;
+                    Cut1.Y = Cut2.Y;
                 }
             }
         }
+
+
         public struct Point
         {
             public float X;
@@ -183,6 +215,94 @@ namespace Group_assignment1_LPR281
         private void button1_Click(object sender, EventArgs e)
         {
             DrawConstraints();
+        }
+
+        void ScanFeasibleArea()
+        {
+            if (AllConstraints!=null)
+            {
+                if (AllConstraints.Count>0)
+                {
+                    int XMax = (int)MaxX1 * 100;
+                    int XMin = (int)MinX1;
+                    int YMax = (int)MaxX2 * 100;
+                    int YMin = (int)MinX2;
+                    FeasibleArea = new List<Point>();
+                    for (int x = XMin; x < XMax; x++)
+                    {
+                        for (int y = YMin; y < YMax; y++)
+                        {
+                            Point TestPoint = new Point((float)x / 100.0f, (float)y / 100.0f);
+                            bool Feasible = true;
+                            for (int i = 0; i < AllConstraints.Count; i++)
+                            {
+                                if (!AllConstraints[i].CheckPoint(TestPoint))
+                                {
+                                    Feasible = false;
+                                    break;
+                                }
+                            }
+                            if (Feasible)
+                            {
+                                FeasibleArea.Add(TestPoint);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    DisplayError("Must have at least one constraint!");
+                }
+            }
+            else
+            {
+                DisplayError("Must have at least one constraint!");
+            }
+        }
+
+        void    DrawFeasibleArea    ()
+        {
+            if (FeasibleArea!=null)
+            {
+                if (FeasibleArea.Count>0)
+                {
+                    string Name = "Feasible Area";
+                    Random rand = new Random();
+                    chart1.Series.Add(Name);
+                    chart1.Series[Name].Color = Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
+                    chart1.Series[Name].Legend = "Legend1";
+                    chart1.Series[Name].ChartArea = "ChartArea1";
+                    chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+                    for (int i = 0; i < FeasibleArea.Count; i++)
+                    {
+                        chart1.Series[Name].Points.AddXY(FeasibleArea[i].X, FeasibleArea[i].Y);
+                    }
+                }
+                else
+                {
+                    DisplayError("No Feasible Area Found");
+                }
+            }
+            else
+            {
+                DisplayError("Feasible Area Not Yet Scanned!");
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ScanFeasibleArea();
+            DrawFeasibleArea();
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+       
+        void    DisplayError    (string Error)
+        {
+            lblError.Text = Error;
         }
     }
 }
