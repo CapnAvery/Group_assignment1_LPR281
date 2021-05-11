@@ -207,9 +207,46 @@ namespace Group_assignment1_LPR281
 
         }
 
+        private bool ValuesAreEmpty() 
+        {
+            bool x1coefecientValid = false;
+            bool x2coefecientValid = false;
+            bool signValid = false;
+            bool RHSvalid = false;
+            bool valid = false;
+            if (txtX1Coef.Text.Length != 0)
+            {
+                x1coefecientValid = true;
+            }
+            if (txtRHS.Text.Length != 0)
+            {
+                RHSvalid = true;
+            }
+            if (cbxSign.Text.Length != 0)
+            {
+                signValid = true;
+            }
+            if (txtX2Coef.Text.Length != 0)
+            {
+                x2coefecientValid = true;
+            }
+            if (x1coefecientValid==true && RHSvalid == true && signValid == true && x2coefecientValid == true)
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+
         private void btnAddConstraint_Click(object sender, EventArgs e)
         {
-            AddConstraint(txtX1Coef.Text, txtX2Coef.Text, cbxSign.Text, txtRHS.Text);
+            if (ValuesAreEmpty())
+            {
+                AddConstraint(txtX1Coef.Text, txtX2Coef.Text, cbxSign.Text, txtRHS.Text);
+            }
+            
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
