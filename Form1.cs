@@ -20,6 +20,7 @@ namespace Group_assignment1_LPR281
         private void Form1_Load(object sender, EventArgs e)
         {
             //hallo mensies
+            //Theuns has joined the club
         }
     }
 }
