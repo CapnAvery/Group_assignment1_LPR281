@@ -206,8 +206,31 @@ namespace Group_assignment1_LPR281
             }
 
         }
-
-        private bool ValuesAreEmpty() 
+        private bool signIsCorrect()
+        {
+            string sign = cbxSign.Text; 
+            if (sign == "<=" || sign == ">=" || sign == "=")
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+        private bool ThisValueIsNumber(string value)
+        {
+            float f;
+            bool isNumeric = float.TryParse(value, out f);
+            if (isNumeric)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        private bool ValuesAreCorrect() 
         {
             bool x1coefecientValid = false;
             bool x2coefecientValid = false;
@@ -216,32 +239,27 @@ namespace Group_assignment1_LPR281
             bool valid = false;
             if (txtX1Coef.Text.Length != 0)
             {
-                x1coefecientValid = true;
+                if (ThisValueIsNumber(txtX1Coef.Text)){x1coefecientValid = true;}
             }
             if (txtRHS.Text.Length != 0)
             {
-                RHSvalid = true;
+                if (ThisValueIsNumber(txtRHS.Text)){RHSvalid = true;}
             }
             if (cbxSign.Text.Length != 0)
             {
-                signValid = true;
+                if (signIsCorrect()) {signValid = true;}
             }
             if (txtX2Coef.Text.Length != 0)
             {
-                x2coefecientValid = true;
+                if (ThisValueIsNumber(txtX2Coef.Text)) {x2coefecientValid = true;}
             }
             if (x1coefecientValid==true && RHSvalid == true && signValid == true && x2coefecientValid == true)
-            {
-                return true;
-            } else
-            {
-                return false;
-            }
+            {return true;} else { return false;}
         }
 
         private void btnAddConstraint_Click(object sender, EventArgs e)
         {
-            if (ValuesAreEmpty())
+            if (ValuesAreCorrect())
             {
                 AddConstraint(txtX1Coef.Text, txtX2Coef.Text, cbxSign.Text, txtRHS.Text);
             }
