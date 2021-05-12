@@ -16,14 +16,15 @@ namespace Group_assignment1_LPR281
 
         public class Constraint
         {
-            public string ID;
+            public string ID;//Used to identify the constraint
             public string Sign;
             public float X1Coefficient;
             public float X2Coefficient;
             public float RHS;
-            public Point Cut1;
-            public Point Cut2;
+            public Point Cut1;  //These are points used to display the line
+            public Point Cut2;  
 
+            //Constructor for the constraint
             public Constraint(string _ID, string _Sign, string _X1Coef, string _X2Coef, string _RHS, int MaxX1, int MaxX2, int MinX1, int MinX2)
             {
                 ID = _ID;
@@ -38,6 +39,7 @@ namespace Group_assignment1_LPR281
 
             public bool CheckPoint(Point _Point)
             {
+                //This checks if a point is meets this constraint's requirements
                 bool Result = true;
                 float X1Value = _Point.X * X1Coefficient;
                 float X2Value = _Point.Y * X2Coefficient;
@@ -60,8 +62,10 @@ namespace Group_assignment1_LPR281
                 return Result;
             }
 
+            //This is used to set where the graph should be drawn
             public void SetCuts(int MaxX1, int MaxX2, int MinX1, int MinX2)
             {
+                //If at least one variable is included in the constraint
                 if (!(X1Coefficient == 0 && X2Coefficient == 0))
                 {
                     if (X2Coefficient != 0)
@@ -98,17 +102,18 @@ namespace Group_assignment1_LPR281
             }
 
             public  float   GetZ    (Point  Input)
-            {
+            {//Returns a rhs value for a point
                 return X1Coefficient * Input.X + X2Coefficient * Input.Y;
             }
         }
 
-
+        //This is made to attach a X value to a Y value
         public struct Point
         {
             public float X;
             public float Y;
 
+            //Constructor
             public Point(float _X, float _Y)
             {
                 X = _X;
@@ -128,8 +133,9 @@ namespace Group_assignment1_LPR281
         }
 
         public List<Constraint> AllConstraints;
-        public Constraint ObjectiveFunction;
-        public List<Point> FeasibleArea;
+        public Constraint ObjectiveFunction;//We make the OF a constriant, because why not?
+        public List<Point> FeasibleArea;//This hold all the points that are within the feasible area
+        //The following values are used to determine the size of the graph, so that it always scales with the constraints
         public int MaxX1 = 1;
         public int MaxX2 = 1;
         public int MinX1 = 0;
@@ -144,6 +150,7 @@ namespace Group_assignment1_LPR281
             //Theuns has joined the club
             AllConstraints = new List<Constraint>();
             ResetGraph();
+            ResetForm();
         }
 
         void AddConstraint(string X1Coef, string X2Coef, string Sign, string RHS)
@@ -151,8 +158,8 @@ namespace Group_assignment1_LPR281
             int ID = AllConstraints.Count;
             Constraint NewConstraint = new Constraint(ID.ToString(), Sign, X1Coef, X2Coef, RHS, MaxX1, MaxX2, MinX1, MinX2);
             AllConstraints.Add(NewConstraint);
-            DisplayConstraints();
-            DrawConstraints(NewConstraint);
+            DisplayConstraints();//This shows the constraints in the list box
+            DrawConstraints(NewConstraint);//This draws the constraints
         }
 
         void DisplayConstraints()
@@ -187,7 +194,7 @@ namespace Group_assignment1_LPR281
             chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             for (int y = -2; y <= 2; y++)
             {//We draw 5 lines instead of just 1 so that it appears extra thick
-                chart1.Series[Name].Points.AddXY(MinX1, (float)y/100.0f);
+                chart1.Series[Name].Points.AddXY(MinX1, (float)y/100.0f);//We devide by 100 so that they are close to each other
                 chart1.Series[Name].Points.AddXY(MaxX1, (float)y / 100.0f);
             }
 
@@ -211,8 +218,12 @@ namespace Group_assignment1_LPR281
 
         void    DrawConstraint  (Constraint _Const)
         {
-            Random rand = new Random();
-            Name = "Constraint " + _Const.ID;
+            Random rand = new Random();//For color purposes
+            string Name = "Constraint " + _Const.ID;
+            if (_Const.ID=="Objective Function")
+            {
+                Name = "Objective Function";
+            }
             chart1.Series.Add(Name);
             chart1.Series[Name].Color = Color.FromArgb(rand.Next(246) + 10, rand.Next(246) + 10, rand.Next(246) + 10);
             //We say 246 + 10 so that the minimum value is 10. This is so that there are no lines that are near black in color, to avoid confusion with the X1 and X2 lines.
@@ -323,9 +334,8 @@ namespace Group_assignment1_LPR281
             if (ValuesAreCorrect())
             {
                 AddConstraint(txtX1Coef.Text, txtX2Coef.Text, cbxSign.Text, txtRHS.Text);
+                ResetConstraintAdd();
             }
-            
-            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -339,23 +349,24 @@ namespace Group_assignment1_LPR281
             {
                 if (AllConstraints.Count > 0)
                 {
-                    int XMax = (int)MaxX1 * 100;
-                    int XMin = (int)MinX1;
-                    int YMax = (int)MaxX2 * 100;
-                    int YMin = (int)MinX2;
+                    //To Check the feasible area, we start at 0,0 then we check every position in a 0.01 interval all the way to the max values
+                    int XMax = (int)(MaxX1+1) * 100;//We say *100 to make the interval 0.01 later
+                    int XMin = (int)0;
+                    int YMax = (int)(MaxX2+1) * 100;
+                    int YMin = (int)0;
                     FeasibleArea = new List<Point>();
                     for (int x = XMin; x < XMax; x++)
                     {
                         for (int y = YMin; y < YMax; y++)
                         {
-                            Point TestPoint = new Point((float)x / 100.0f, (float)y / 100.0f);
+                            Point TestPoint = new Point((float)x / 100.0f, (float)y / 100.0f);//Here we /100 again, to make it 0.01
                             bool Feasible = true;
-                            for (int i = 0; i < AllConstraints.Count; i++)
+                            for (int i = 0; i < AllConstraints.Count; i++)//Checks all the constraints to see if the current point is feasible
                             {
-                                if (!AllConstraints[i].CheckPoint(TestPoint))
+                                if (!AllConstraints[i].CheckPoint(TestPoint))//If the point is not within the current constraint's limits ->
                                 {
-                                    Feasible = false;
-                                    break;
+                                    Feasible = false;//-> then we say the point is infeasible
+                                    break;//We don't need to check the rest of the constraints then
                                 }
                             }
                             if (Feasible)
@@ -374,6 +385,9 @@ namespace Group_assignment1_LPR281
             {
                 DisplayError("Must have at least one constraint!");
             }
+            /*  Because of the way this check works, there is some loss of accuracy. The code only checks points in a .01 interval.
+                So if there needs to be values less than 0.01, they will be ignored.
+            */
         }
 
         void    DrawFeasibleArea    ()
@@ -384,7 +398,7 @@ namespace Group_assignment1_LPR281
                 {
                     if (ObjectiveFunction!=null)
                     {
-                        DrawConstraint(ObjectiveFunction);
+                        DrawConstraint(ObjectiveFunction);//We also draw the objective function
                         string Name = "Feasible Area";
                         Random rand = new Random();
                         chart1.Series.Add(Name);
@@ -392,16 +406,27 @@ namespace Group_assignment1_LPR281
                         chart1.Series[Name].Legend = "Legend1";
                         chart1.Series[Name].ChartArea = "ChartArea1";
                         chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-                        float MaxZ = 0;
-                        Point OptimalPoint  =   new Point(-1,-1);
+                        float BestZ = -1;
+                        Point OptimalPoint  =   new Point(-1,-1);//We default these values to -1 so that we can use it as a check later
                         for (int i = 0; i < FeasibleArea.Count; i++)
                         {
                             chart1.Series[Name].Points.AddXY(FeasibleArea[i].X, FeasibleArea[i].Y);
                             float Z = ObjectiveFunction.GetZ(FeasibleArea[i]);
-                            if (Z>MaxZ)
+                            if (ObjectiveFunction.Sign==">")
                             {
-                                MaxZ = Z;
-                                OptimalPoint = FeasibleArea[i];
+                                if (Z > BestZ   ||  BestZ==-1)
+                                {
+                                    BestZ = Z;
+                                    OptimalPoint = FeasibleArea[i];
+                                }
+                            }
+                            else
+                            {
+                                if (Z < BestZ || BestZ == -1)
+                                {
+                                    BestZ = Z;
+                                    OptimalPoint = FeasibleArea[i];
+                                }
                             }
                         }
                         if (OptimalPoint.X>-1)
@@ -431,8 +456,23 @@ namespace Group_assignment1_LPR281
 
         private void button2_Click(object sender, EventArgs e)
         {
+            DrawConstraints();
+            GetObjectiveFunction();
             ScanFeasibleArea();
             DrawFeasibleArea();
+        }
+
+        void GetObjectiveFunction   ()
+        {
+            string X1Coef = txtX1CoefOF.Text;
+            string X2Coef = txtX2CoefOF.Text;
+            string RHS = "0";
+            string Sign = "<";//We use these signs just as a reference later on
+            if (cbxMinMax.Text=="Max")
+            {
+                Sign = ">";
+            }
+            ObjectiveFunction = new Constraint("Objective Function", Sign, X1Coef, X2Coef, RHS, MaxX1, MaxX2, MinX1, MinX2);
         }
 
         private void label4_Click(object sender, EventArgs e)
@@ -484,6 +524,39 @@ namespace Group_assignment1_LPR281
             {
                 DisplayError("No Constraints");
             }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            ResetForm();
+        }
+
+        void    ResetForm ()
+        {
+            chart1.Series.Clear();
+            AllConstraints = new List<Constraint>();
+            FeasibleArea = new List<Point>();
+            ObjectiveFunction = null;
+            lblError.Text = "";
+            lbxConstraints.Items.Clear();
+            txtRemoveID.Text = "";
+            txtX1CoefOF.Text = "";
+            txtX2CoefOF.Text = "";
+            cbxMinMax.Text = "Max";
+            ResetConstraintAdd();
+        }
+
+        void    ResetConstraintAdd  ()
+        {
+            txtRHS.Text = "";
+            txtX1Coef.Text = "";
+            txtX2Coef.Text = "";
+            cbxSign.Text = ">=";
         }
     }
 }
