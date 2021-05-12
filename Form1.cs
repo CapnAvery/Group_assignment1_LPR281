@@ -28,12 +28,12 @@ namespace Group_assignment1_LPR281
             {
                 ID = _ID;
                 Sign = _Sign;
-                X1Coefficient = int.Parse(_X1Coef);
-                X2Coefficient = int.Parse(_X2Coef);
-                RHS = int.Parse(_RHS);
+                X1Coefficient = float.Parse(_X1Coef);
+                X2Coefficient = float.Parse(_X2Coef);
+                RHS = float.Parse(_RHS);
                 Cut1 = new Point(0, 0);
                 Cut2 = new Point(0, 0);
-                SetCuts(MaxX1, MaxX2,MinX1,MinX2);
+                SetCuts(MaxX1, MaxX2, MinX1, MinX2);
             }
 
             public bool CheckPoint(Point _Point)
@@ -44,23 +44,23 @@ namespace Group_assignment1_LPR281
                 float Total = X1Value + X2Value;
                 if (Sign == ">=")
                 {
-                    Result = !(Total >= RHS);
+                    Result = (Total >= RHS);
                 }
                 else
                 {
                     if (Sign == "<=")
                     {
-                        Result = !(Total <= RHS);
+                        Result = (Total <= RHS);
                     }
                     else
                     {
-                        Result = !(Total == RHS);
+                        Result = (Total == RHS);
                     }
                 }
                 return Result;
             }
 
-            public void SetCuts(int MaxX1, int MaxX2,int MinX1, int MinX2)
+            public void SetCuts(int MaxX1, int MaxX2, int MinX1, int MinX2)
             {
                 if (!(X1Coefficient == 0 && X2Coefficient == 0))
                 {
@@ -149,13 +149,27 @@ namespace Group_assignment1_LPR281
         void AddConstraint(string X1Coef, string X2Coef, string Sign, string RHS)
         {
             int ID = AllConstraints.Count;
-            Constraint NewConstraint = new Constraint(ID.ToString(), Sign, X1Coef, X2Coef, RHS, MaxX1, MaxX2, MinX1,MinX2);
+            Constraint NewConstraint = new Constraint(ID.ToString(), Sign, X1Coef, X2Coef, RHS, MaxX1, MaxX2, MinX1, MinX2);
             AllConstraints.Add(NewConstraint);
-            string Line = "";
-            Line += ID.ToString() + ". " + X1Coef + "x1 + " + X2Coef + "x2 " + Sign + " " + RHS;
-            lbxConstraints.Items.Add(Line);
+            DisplayConstraints();
             DrawConstraints(NewConstraint);
         }
+
+        void DisplayConstraints()
+        {
+            lbxConstraints.Items.Clear();
+            for (int i = 0; i < AllConstraints.Count; i++)
+            {
+                string Line = "";
+                Line += AllConstraints[i].ID.ToString() + ". ";
+                Line += AllConstraints[i].X1Coefficient + "x1 + ";
+                Line += AllConstraints[i].X2Coefficient + "x2 ";
+                Line += AllConstraints[i].Sign + " ";
+                Line += AllConstraints[i].RHS;
+                lbxConstraints.Items.Add(Line);
+            }
+        }
+
 
         void DrawConstraints(Constraint _Const = null)
         {
@@ -185,7 +199,7 @@ namespace Group_assignment1_LPR281
             chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             for (int x = -2; x <= 2; x++)//We draw 5 lines instead of just 1 so that it appears extra thick
             {
-                chart1.Series[Name].Points.AddXY((float)x/100.0f, MinX2);
+                chart1.Series[Name].Points.AddXY((float)x / 100.0f, MinX2);
                 chart1.Series[Name].Points.AddXY((float)x / 100.0f, MaxX2);
             }
 
@@ -433,7 +447,43 @@ namespace Group_assignment1_LPR281
 
         private void btnRemoveConstraint_Click(object sender, EventArgs e)
         {
-
+            string ID = txtRemoveID.Text;
+            int pos = -1;
+            if (AllConstraints!=null)
+            {
+                if (AllConstraints.Count>0)
+                {
+                    for (int i = 0; i < AllConstraints.Count; i++)
+                    {
+                        if (AllConstraints[i].ID==ID)
+                        {
+                            pos = i;
+                            break;
+                        }
+                    }
+                    if (pos>-1)
+                    {
+                        AllConstraints.RemoveAt(pos);
+                        for (int i = 0; i < AllConstraints.Count; i++)
+                        {
+                            AllConstraints[i].ID = i.ToString();
+                        }
+                        DisplayConstraints();
+                    }
+                    else
+                    {
+                        DisplayError("Constraint not found");
+                    }
+                }
+                else
+                {
+                    DisplayError("No Constraints");
+                }
+            }
+            else
+            {
+                DisplayError("No Constraints");
+            }
         }
     }
 }
