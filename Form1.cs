@@ -96,6 +96,11 @@ namespace Group_assignment1_LPR281
                     Cut2 = new Point(0, 0);
                 }
             }
+
+            public  float   GetZ    (Point  Input)
+            {
+                return X1Coefficient * Input.X + X2Coefficient * Input.Y;
+            }
         }
 
 
@@ -110,6 +115,11 @@ namespace Group_assignment1_LPR281
                 Y = _Y;
             }
 
+
+            public override string ToString()
+            {
+                return "( " + X.ToString() + " : " + Y.ToString() + " )";
+            }
         }
 
         public Form1()
@@ -118,6 +128,7 @@ namespace Group_assignment1_LPR281
         }
 
         public List<Constraint> AllConstraints;
+        public Constraint ObjectiveFunction;
         public List<Point> FeasibleArea;
         public int MaxX1 = 1;
         public int MaxX2 = 1;
@@ -178,20 +189,25 @@ namespace Group_assignment1_LPR281
                 chart1.Series[Name].Points.AddXY((float)x / 100.0f, MaxX2);
             }
 
-            Random rand = new Random();
             for (int i = 0; i < AllConstraints.Count; i++)
             {
-                Name = "Constraint " + AllConstraints[i].ID;
-                chart1.Series.Add(Name);
-                chart1.Series[Name].Color = Color.FromArgb(rand.Next(246) + 10, rand.Next(246) + 10, rand.Next(246) + 10);
-                //We say 246 + 10 so that the minimum value is 10. This is so that there are no lines that are near black in color, to avoid confusion with the X1 and X2 lines.
-                chart1.Series[Name].Legend = "Legend1";
-                chart1.Series[Name].ChartArea = "ChartArea1";
-                chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-                AllConstraints[i].SetCuts(MaxX1, MaxX2,MinX1,MinX2);
-                chart1.Series[Name].Points.AddXY(AllConstraints[i].Cut1.X, AllConstraints[i].Cut1.Y);
-                chart1.Series[Name].Points.AddXY(AllConstraints[i].Cut2.X, AllConstraints[i].Cut2.Y);
+                DrawConstraint(AllConstraints[i]);
             }
+        }
+
+        void    DrawConstraint  (Constraint _Const)
+        {
+            Random rand = new Random();
+            Name = "Constraint " + _Const.ID;
+            chart1.Series.Add(Name);
+            chart1.Series[Name].Color = Color.FromArgb(rand.Next(246) + 10, rand.Next(246) + 10, rand.Next(246) + 10);
+            //We say 246 + 10 so that the minimum value is 10. This is so that there are no lines that are near black in color, to avoid confusion with the X1 and X2 lines.
+            chart1.Series[Name].Legend = "Legend1";
+            chart1.Series[Name].ChartArea = "ChartArea1";
+            chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            _Const.SetCuts(MaxX1, MaxX2, MinX1, MinX2);
+            chart1.Series[Name].Points.AddXY(_Const.Cut1.X, _Const.Cut1.Y);
+            chart1.Series[Name].Points.AddXY(_Const.Cut2.X, _Const.Cut2.Y);
         }
 
         void ResetGraph()
@@ -307,7 +323,7 @@ namespace Group_assignment1_LPR281
         {
             if (AllConstraints!=null)
             {
-                if (AllConstraints.Count>0)
+                if (AllConstraints.Count > 0)
                 {
                     int XMax = (int)MaxX1 * 100;
                     int XMin = (int)MinX1;
@@ -352,16 +368,40 @@ namespace Group_assignment1_LPR281
             {
                 if (FeasibleArea.Count>0)
                 {
-                    string Name = "Feasible Area";
-                    Random rand = new Random();
-                    chart1.Series.Add(Name);
-                    chart1.Series[Name].Color = Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
-                    chart1.Series[Name].Legend = "Legend1";
-                    chart1.Series[Name].ChartArea = "ChartArea1";
-                    chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-                    for (int i = 0; i < FeasibleArea.Count; i++)
+                    if (ObjectiveFunction!=null)
                     {
-                        chart1.Series[Name].Points.AddXY(FeasibleArea[i].X, FeasibleArea[i].Y);
+                        DrawConstraint(ObjectiveFunction);
+                        string Name = "Feasible Area";
+                        Random rand = new Random();
+                        chart1.Series.Add(Name);
+                        chart1.Series[Name].Color = Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
+                        chart1.Series[Name].Legend = "Legend1";
+                        chart1.Series[Name].ChartArea = "ChartArea1";
+                        chart1.Series[Name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+                        float MaxZ = 0;
+                        Point OptimalPoint  =   new Point(-1,-1);
+                        for (int i = 0; i < FeasibleArea.Count; i++)
+                        {
+                            chart1.Series[Name].Points.AddXY(FeasibleArea[i].X, FeasibleArea[i].Y);
+                            float Z = ObjectiveFunction.GetZ(FeasibleArea[i]);
+                            if (Z>MaxZ)
+                            {
+                                MaxZ = Z;
+                                OptimalPoint = FeasibleArea[i];
+                            }
+                        }
+                        if (OptimalPoint.X>-1)
+                        {
+                            DisplayError("Optimal Point is at "+OptimalPoint.ToString());
+                            if (FeasibleArea.Contains(new   Point(MaxX1,MaxX2)))
+                            {
+                                DisplayError("Unbounded");
+                            }
+                        }
+                        else
+                        {
+                            DisplayError("No Optimal Point Found");
+                        }
                     }
                 }
                 else
